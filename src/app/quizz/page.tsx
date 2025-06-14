@@ -3,35 +3,37 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button"
 import ProgressBar from "@/components/progressBar";
 import { ChevronLeft, ChevronsLeft, X } from "lucide-react";
+import ResultCard from "./ResultCard";
+import QuizzSubmission from "./QuizzSubmission";
 
 const questions = [
     {
-        questionText: "1 What is React?",
+        questionText: "Quem é o responsável pela Multimídia?",
         answers: [
-            { answerText: "4A library for building user interfaces", isCorrect: true, id: 1 },
-            { answerText: "5A fron-end framework", isCorrect: false, id: 2 },
-            { answerText: "6A back-end framework", isCorrect: false, id: 3 },
-            { answerText: "7A database", isCorrect: false, id: 4 }
+            { answerText: "Isael", isCorrect: true, id: 1 },
+            { answerText: "Célio", isCorrect: false, id: 2 },
+            { answerText: "Emília", isCorrect: false, id: 3 },
+            { answerText: "Peter", isCorrect: false, id: 4 }
         ]
     },
 
     {
-        questionText: "2 What is React?",
+        questionText: "Qual é o membro mais bonito do CLAS",
         answers: [
-            { answerText: "8A library for building user interfaces", isCorrect: true, id: 1 },
-            { answerText: "9A fron-end framework", isCorrect: false, id: 2 },
-            { answerText: "10A back-end framework", isCorrect: false, id: 3 },
-            { answerText: "11A database", isCorrect: false, id: 4 }
+            { answerText: "Peter", isCorrect: true, id: 1 },
+            { answerText: "António Manuel", isCorrect: false, id: 2 },
+            { answerText: "Etc", isCorrect: false, id: 3 },
+            { answerText: "Ninguém", isCorrect: false, id: 4 }
         ]
     },
 
     {
-        questionText: "3 What is React?",
+        questionText: "Em que ano foi fundado o CLAS?",
         answers: [
-            { answerText: "12A library for building user interfaces", isCorrect: true, id: 1 },
-            { answerText: "13A fron-end framework", isCorrect: false, id: 2 },
-            { answerText: "14A back-end framework", isCorrect: false, id: 3 },
-            { answerText: "15A database", isCorrect: false, id: 4 }
+            { answerText: "2023", isCorrect: true, id: 1 },
+            { answerText: "2022", isCorrect: false, id: 2 },
+            { answerText: "2020", isCorrect: false, id: 3 },
+            { answerText: "2024", isCorrect: false, id: 4 }
         ]
     }
 ]
@@ -42,6 +44,7 @@ export default function Home() {
     const [score, setScore] = useState<number>(0);
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+    const [submitted, setSubmitted] = useState<boolean>(false);
 
     const handleNext = () => {
         if (!started) {
@@ -51,6 +54,9 @@ export default function Home() {
 
         if (currentQuestion < questions.length - 1) {
             setCurrentQuestion(currentQuestion + 1);
+        } else {
+            setSubmitted(true);
+            return;
         }
 
         setSelectedAnswer(null);
@@ -66,6 +72,17 @@ export default function Home() {
         setIsCorrect(isCurrentCorrect);
     }
 
+    const scorePercentage: number = Math.round((score / questions.length) * 100);
+
+    if (submitted) {
+        return (
+            <QuizzSubmission
+                score={score}
+                scorePercentage={scorePercentage}
+                totalQuestions={questions.length}
+            />
+        )
+    }
   return (
     <div className="flex flex-col flex-1">
        <div className="position-sticky top-0 z-10 shadow-md py-4 w-full">
@@ -84,9 +101,11 @@ export default function Home() {
             <div className="grid grid-cols-1 gap-6 mt-6">
                 {
                     questions[currentQuestion].answers.map (answer => {
+                        const variant = selectedAnswer === answer.id ? (answer.isCorrect ? "neoSuccess" : "neoDanger") : "neoOutline";
                         return (
-                            <Button key={answer.id} variant={"secondary"} onClick={() => handleAnswer(answer)} >{answer.answerText}</Button>
-                        )
+                            <Button key={answer.id} variant={variant} size="xl" onClick={() => handleAnswer(answer)}><p 
+                            className="whitespace-normal">{answer.answerText}</p></Button>
+                        ) 
                     })
                 }
             </div>
@@ -94,8 +113,8 @@ export default function Home() {
       )}
     </main>
     <footer className="footer pb-9 px-6 relative mb-0">
-        <p>{isCorrect ? 'correct' : 'icorrect'}</p>
-      <Button onClick={handleNext}>{!started ? 'Iniciar' : 'Próximo'}</Button>
+        <ResultCard isCorrect={isCorrect} correctAnswer={questions[currentQuestion].answers.find(answer => answer.isCorrect === true)?.answerText} />
+      <Button variant="neo" size="lg " onClick={handleNext}>{!started ? 'Iniciar' : (currentQuestion === questions.length - 1 ) ? 'Submeter' : 'Próximo'}</Button>
     </footer>
     </div>
   )
